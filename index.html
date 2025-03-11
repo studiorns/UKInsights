@@ -3,11 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Market Metrics Guide for CMO - UK</title>
+    <title>UK Market Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        /* SONER Logo Animation */
+        @keyframes sonerScan { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes sonerBlip { 0%, 20%, 100% { opacity: 0; } 2%, 15% { opacity: 1; } 3% { transform: scale(1.2); } }
+        
+        /* SONER Logo styles */
+        .soner-logo { display: flex; align-items: center; color: white; font-family: 'Inter', sans-serif; font-size: 28px; font-weight: 300; }
+        .soner-radar { width: 24px; height: 24px; border-radius: 50%; border: 1px solid white; margin: 0 3px; position: relative; background-color: rgba(255, 255, 255, 0.05); overflow: hidden; }
+        .soner-scanner { position: absolute; top: 0; left: 0; width: 100%; height: 100%; animation: sonerScan 4s linear infinite; transform-origin: center; }
+        .soner-scanner::before { content: ''; position: absolute; top: 0; left: 50%; width: 50%; height: 50%; background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.4)); transform-origin: bottom left; clip-path: polygon(0 0, 100% 0, 0 100%); }
+        .soner-scanner::after { content: ''; position: absolute; top: 0; left: 50%; width: 50%; height: 1px; background: linear-gradient(90deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 1)); transform-origin: left center; box-shadow: 0 0 4px rgba(255, 255, 255, 0.8); }
+        .soner-blip { position: absolute; width: 2px; height: 2px; background-color: white; border-radius: 50%; opacity: 0; box-shadow: 0 0 4px white; }
+        .soner-blip:nth-child(1) { top: 25%; left: 30%; animation: sonerBlip 4s 1s infinite; }
+        .soner-blip:nth-child(2) { top: 65%; left: 60%; animation: sonerBlip 4s 2.5s infinite; }
+        .soner-tagline { color: white; font-size: 8px; text-transform: uppercase; font-weight: 500; letter-spacing: 0.5em; margin-left: 10px; opacity: 0.8; }
+        
         :root {
             --primary: #4285f4;
             --primary-light: #1a2233;
@@ -36,6 +53,9 @@
             --radius-md: 12px;
             --radius-lg: 16px;
             --transition: all 0.3s ease;
+            --bg-color: #000000;
+            --card-bg: #121212;
+            --section-bg: #181818;
         }
         
         * {
@@ -46,258 +66,630 @@
         
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            line-height: 1.6;
-            color: var(--gray-800);
-            background-color: var(--gray-100);
-            padding: 0;
             margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--gray-800);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1280px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 0 24px;
         }
         
         header {
-            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            background: linear-gradient(135deg, #1a73e8 0%, #174ea6 100%);
             color: white;
-            padding: 40px 0;
+            padding: 32px 0;
+            text-align: center;
             margin-bottom: 40px;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
         }
         
-        header .container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTQ0MCIgaGVpZ2h0PSI0MDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IHgxPSIxMDAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiIGlkPSJhIj48c3RvcCBzdG9wLWNvbG9yPSIjRkZGIiBzdG9wLW9wYWNpdHk9Ii4wNSIgb2Zmc2V0PSIwJSIvPjxzdG9wIHN0b3AtY29sb3I9IiNGRkYiIHN0b3Atb3BhY2l0eT0iLjAyIiBvZmZzZXQ9IjEwMCUiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cGF0aCBkPSJNMTQ0MCAyMDBjLTEzMS44LTEyLjktMjY3LjgtMTkuNC00MDgtMTkuNC0xNDAuMiAwLTI3Ni4yIDYuNS00MDggMTkuNFYwaDgxNnYyMDB6IiBmaWxsPSJ1cmwoI2EpIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiLz48L3N2Zz4=');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.1;
         }
         
-        h1 {
+        header h1 {
             font-size: 2.5rem;
             font-weight: 700;
-            margin: 0;
-            line-height: 1.2;
+            margin-bottom: 8px;
+            position: relative;
+        }
+        
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 0;
+            font-weight: 600;
+            line-height: 1.3;
+            color: var(--gray-900);
         }
         
         h2 {
-            font-size: 1.8rem;
-            font-weight: 600;
-            margin: 2rem 0 1rem;
-            color: var(--primary-dark);
-            border-bottom: 2px solid var(--primary-light);
-            padding-bottom: 0.5rem;
+            font-size: 1.75rem;
+            margin-bottom: 1.5rem;
         }
         
         h3 {
-            font-size: 1.4rem;
-            font-weight: 600;
-            margin: 1.5rem 0 1rem;
-            color: var(--gray-800);
+            font-size: 1.35rem;
+            margin-bottom: 1rem;
         }
         
         h4 {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin: 1.2rem 0 0.8rem;
-            color: var(--gray-800);
+            font-size: 1.15rem;
+            margin-bottom: 0.75rem;
         }
         
         p {
             margin-bottom: 1rem;
-            color: var(--gray-800);
         }
         
-        .subtitle {
-            font-size: 1.2rem;
-            color: rgba(255, 255, 255, 0.9);
-            max-width: 800px;
-        }
-        
-        .card {
-            background-color: var(--gray-200);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-sm);
-            padding: 30px;
-            margin-bottom: 30px;
-            transition: all 0.3s ease;
-        }
-        
-        .card:hover {
+        .dashboard-section {
+            background-color: var(--section-bg);
+            border-radius: var(--radius-md);
             box-shadow: var(--shadow);
+            padding: 28px;
+            margin-bottom: 32px;
+            transition: var(--transition);
+            border: 1px solid var(--gray-300);
+        }
+        
+        .dashboard-section:hover {
+            box-shadow: var(--shadow-md);
             transform: translateY(-2px);
         }
         
-        .metric-card {
-            background-color: var(--gray-200);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-sm);
-            padding: 25px;
-            margin-bottom: 20px;
-            border-left: 4px solid var(--primary);
-        }
-        
-        .metric-header {
+        .dashboard-section h2 {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            border-bottom: 2px solid var(--gray-200);
+            padding-bottom: 16px;
+            margin-bottom: 28px;
+            color: var(--gray-900);
+            font-size: 1.5rem;
         }
         
-        .metric-title {
-            font-size: 1.3rem;
+        .dashboard-section h2 i {
+            margin-right: 12px;
+            color: var(--primary);
+            font-size: 1.25rem;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 24px;
+        }
+        
+        .metric-card {
+            background-color: var(--gray-100);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            border: 1px solid var(--gray-200);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background-color: var(--primary);
+            opacity: 0;
+            transition: var(--transition);
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .metric-card:hover::before {
+            opacity: 1;
+        }
+        
+        .metric-name {
             font-weight: 600;
-            color: var(--gray-900);
-            margin: 0;
+            margin-bottom: 10px;
+            color: var(--gray-600);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .metric-name i {
+            margin-right: 8px;
+            color: var(--primary);
         }
         
         .metric-value {
-            font-size: 1.1rem;
+            font-size: 2rem;
             font-weight: 700;
-            color: var(--primary-dark);
-            background-color: var(--primary-light);
-            padding: 5px 12px;
+            color: var(--gray-900);
+            margin-bottom: 4px;
+            line-height: 1.2;
+        }
+        
+        .change {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
             border-radius: 20px;
-        }
-        
-        .metric-description {
-            margin-bottom: 15px;
-            color: var(--gray-700);
-        }
-        
-        .calculation {
-            background-color: var(--gray-100);
-            padding: 15px;
-            border-radius: var(--radius-sm);
-            margin-bottom: 15px;
-            border-left: 3px solid var(--gray-400);
-        }
-        
-        .calculation h5 {
-            font-size: 1rem;
+            font-size: 0.8rem;
+            margin-left: 8px;
             font-weight: 600;
-            margin-top: 0;
-            margin-bottom: 10px;
-            color: var(--gray-800);
+            transition: var(--transition);
         }
         
-        .interpretation {
-            margin-bottom: 15px;
+        .change i {
+            margin-right: 4px;
+            font-size: 0.75rem;
         }
         
-        .interpretation h5 {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-top: 0;
-            margin-bottom: 10px;
-            color: var(--gray-800);
-        }
-        
-        .interpretation ul {
-            padding-left: 20px;
-            margin-bottom: 10px;
-        }
-        
-        .business-implications {
-            background-color: var(--secondary-light);
-            padding: 15px;
-            border-radius: var(--radius-sm);
-            margin-bottom: 15px;
-            border-left: 3px solid var(--secondary);
-        }
-        
-        .business-implications h5 {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-top: 0;
-            margin-bottom: 10px;
+        .positive { 
+            background-color: var(--secondary-light); 
             color: var(--secondary);
         }
         
-        .business-implications ul {
-            padding-left: 20px;
-            margin-bottom: 0;
+        .negative { 
+            background-color: var(--danger-light); 
+            color: var(--danger);
         }
         
-        .business-implications li {
-            margin-bottom: 8px;
-        }
-        
-        .business-implications li:last-child {
-            margin-bottom: 0;
-        }
-        
-        .example {
-            background-color: var(--warning-light);
-            padding: 15px;
-            border-radius: var(--radius-sm);
-            margin-bottom: 15px;
-            border-left: 3px solid var(--warning);
-        }
-        
-        .example h5 {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-top: 0;
-            margin-bottom: 10px;
-            color: #d68000;
-        }
-        
-        .section-intro {
-            background-color: var(--primary-light);
-            padding: 20px;
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+            margin-bottom: 28px;
+            background-color: var(--card-bg);
             border-radius: var(--radius);
-            margin-bottom: 30px;
-            border-left: 4px solid var(--primary);
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            border: 1px solid var(--gray-300);
+            transition: var(--transition);
         }
         
-        .section-intro p {
-            margin-bottom: 0;
+        .chart-container:hover {
+            box-shadow: var(--shadow-md);
         }
         
-        .footer {
+        .scenario-selector {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 24px 0;
+            gap: 12px;
+        }
+        
+        .scenario-btn {
             background-color: var(--gray-100);
-            color: white;
-            padding: 20px 0;
-            margin-top: 40px;
-            text-align: center;
-            border-top: 1px solid var(--gray-300);
+            border: 1px solid var(--gray-300);
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            color: var(--gray-700);
         }
         
-        .footer p {
-            color: var(--gray-700);
-            margin-bottom: 0;
-            font-size: 0.9rem;
+        .scenario-btn:hover {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            border-color: var(--primary-light);
+            transform: translateY(-2px);
         }
+        
+        .scenario-btn.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3);
+        }
+        
+        .tab-container {
+            margin-top: 24px;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            border-bottom: 1px solid var(--gray-300);
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        
+        .tab-btn {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--gray-600);
+            border-radius: var(--radius) var(--radius) 0 0;
+            transition: var(--transition);
+            position: relative;
+            font-size: 0.95rem;
+        }
+        
+        .tab-btn::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary);
+            transform: scaleX(0);
+            transition: var(--transition);
+        }
+        
+        .tab-btn:hover {
+            color: var(--primary);
+        }
+        
+        .tab-btn.active {
+            color: var(--primary);
+        }
+        
+        .tab-btn.active::after {
+            transform: scaleX(1);
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 8px 0 24px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .insight-summary {
+            background-color: var(--primary-light);
+            border-left: 4px solid var(--primary);
+            padding: 20px 24px;
+            margin-bottom: 28px;
+            border-radius: 0 var(--radius) var(--radius) 0;
+            position: relative;
+        }
+        
+        .insight-summary::before {
+            content: '\f0eb';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            top: 20px;
+            right: 24px;
+            font-size: 1.5rem;
+            color: var(--primary);
+            opacity: 0.2;
+        }
+        
+        .insight-summary h3 {
+            color: var(--primary-dark);
+            margin-bottom: 12px;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .insight-summary h3 i {
+            margin-right: 10px;
+        }
+        
+        .insight-summary p {
+            margin: 0;
+            color: var(--gray-800);
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+        
+        .highlight-box {
+            background-color: var(--warning-light);
+            border-left: 4px solid var(--warning);
+            padding: 20px 24px;
+            margin: 24px 0;
+            border-radius: 0 var(--radius) var(--radius) 0;
+            position: relative;
+        }
+        
+        .highlight-box::before {
+            content: '\f071';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            top: 20px;
+            right: 24px;
+            font-size: 1.5rem;
+            color: var(--warning);
+            opacity: 0.2;
+        }
+        
+        .highlight-box h5 {
+            color: #d68000;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .highlight-box h5 i {
+            margin-right: 10px;
+        }
+        
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 28px;
+            margin: 28px 0;
+        }
+        
+        .supporting-metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 20px;
+        }
+        
+        .data-card {
+            background-color: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-300);
+            transition: var(--transition);
+        }
+        
+        .data-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-3px);
+        }
+        
+        .data-card h4 {
+            border-bottom: 1px solid var(--gray-200);
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+            color: var(--gray-800);
+            display: flex;
+            align-items: center;
+        }
+        
+        .data-card h4 i {
+            margin-right: 10px;
+            color: var(--primary);
+        }
+        
+        .data-card ul {
+            padding-left: 18px;
+            margin-bottom: 0;
+        }
+        
+        .data-card li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        
+        .data-card li:last-child {
+            margin-bottom: 0;
+        }
+        
+        .recommendation-card {
+            background-color: var(--gray-100);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 24px;
+            border-left: 4px solid var(--primary);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .recommendation-card::after {
+            content: '\f0eb';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 2rem;
+            color: var(--primary);
+            opacity: 0.05;
+        }
+        
+        .recommendation-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .recommendation-card h4 {
+            color: var(--primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .recommendation-card h4 i {
+            margin-right: 10px;
+        }
+        
+        .recommendation-card p {
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+        
+        .recommendation-card p:last-child {
+            margin-bottom: 0;
+        }
+        
+        .print-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(26, 115, 232, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            z-index: 1000;
+        }
+        
+        .print-btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 6px 16px rgba(26, 115, 232, 0.5);
+        }
+        
         
         @media (max-width: 768px) {
+            .metrics-grid, .data-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .supporting-metrics-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+            
+            .tab-buttons {
+                flex-direction: column;
+            }
+            
+            .tab-btn {
+                width: 100%;
+                text-align: left;
+                padding: 12px;
+                border-radius: 0;
+            }
+            
+            .print-btn {
+                bottom: 20px;
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+                right: 20px;
+            }
+            
+            .data-card {
+                padding: 16px;
+                margin-bottom: 16px;
+            }
+            
+            .data-card ul {
+                padding-left: 16px;
+            }
+            
+            .data-card li {
+                font-size: 0.95rem;
+                line-height: 1.4;
+                margin-bottom: 8px;
+            }
+            
             .container {
-                padding: 0 15px;
+                padding: 0 16px;
             }
             
-            h1 {
-                font-size: 2rem;
+            .dashboard-section {
+                padding: 20px;
+                margin-bottom: 24px;
             }
             
-            h2 {
-                font-size: 1.5rem;
+            .chart-container {
+                height: 350px;
+                padding: 16px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .data-card h4 {
+                font-size: 1rem;
             }
             
-            h3 {
+            .data-card li {
+                font-size: 0.9rem;
+            }
+            
+            .dashboard-section h2 {
                 font-size: 1.3rem;
             }
             
-            .card, .metric-card {
-                padding: 20px;
-            }
-            
-            .metric-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
-            }
-            
             .metric-value {
-                align-self: flex-start;
+                font-size: 1.6rem;
+            }
+            
+            .chart-container {
+                height: 300px;
+                padding: 12px;
+            }
+            
+            header h1 {
+                font-size: 2rem;
+            }
+        }
+        
+        @media print {
+            body {
+                background-color: white;
+            }
+            
+            .dashboard-section {
+                box-shadow: none;
+                break-inside: avoid;
+            }
+            
+            .print-btn {
+                display: none;
+            }
+            
+            .tab-content {
+                display: block !important;
+            }
+            
+            .tab-buttons {
+                display: none;
             }
         }
     </style>
@@ -305,792 +697,281 @@
 <body>
     <header>
         <div class="container">
-            <h1>UK Market Metrics & Insights</h1>
-            <p class="subtitle">Market Analysis and Performance Indicators</p>
+            <div class="soner-logo">
+                S<div class="soner-radar">
+                    <div class="soner-scanner"></div>
+                    <div class="soner-blip"></div>
+                    <div class="soner-blip"></div>
+                </div>NER
+                <div class="soner-tagline">VISUAL INTELLIGENCE</div>
+            </div>
+            <h1>United Kingdom Market Dashboard</h1>
+            <h2 style="font-size: 1.3rem; margin-top: 5px; font-weight: 500;">Department of Culture and Tourism - Abu Dhabi</h2>
+            <p>Strategic Market Analysis & Forecast 2025</p>
         </div>
     </header>
     
     <div class="container">
-        <div class="card">
-            <h2>Introduction</h2>
-            <p>This guide provides detailed explanations of the key metrics and insights used in our market analysis dashboards. It is designed to help decision-makers understand the technical aspects of our market performance indicators and their business implications.</p>
-            <p>Each metric is explained in terms of:</p>
-            <ul>
-                <li>What it measures</li>
-                <li>How it's calculated</li>
-                <li>How to interpret different values</li>
-                <li>Business implications and actionable insights</li>
-                <li>Practical examples where applicable</li>
-            </ul>
-            <p>The metrics are organized into categories that align with our dashboard structure, making it easy to reference when reviewing market performance.</p>
-        </div>
-        
-        <h2>Brand Health Metrics</h2>
-        <div class="section-intro">
-            <p>Brand health metrics measure consumer perceptions and attitudes toward our destination. These metrics are leading indicators that typically precede changes in actual travel behavior.</p>
-        </div>
-        
-        <div class="metric-card">
-            <div class="metric-header">
-                <h3 class="metric-title">Awareness</h3>
-                <div class="metric-value">92.70% (+0.46pp)</div>
-            </div>
-            <p class="metric-description">Awareness measures the percentage of the target audience who are aware of Abu Dhabi as a Cultural and Sea & Sun travel destination.</p>
-            
-            <div class="calculation">
-                <h5>How It's Calculated:</h5>
-                <p>Based on survey responses to questions like "Which international holiday destinations offering a combination of both cultural and sun & beach activities are you aware of?" The percentage represents those who respond positively out of the total surveyed population.</p>
-            </div>
-            
-            <div class="interpretation">
-                <h5>Interpretation:</h5>
-                <ul>
-                    <li><strong>90%+</strong>: Excellent awareness, approaching market saturation</li>
-                    <li><strong>70-90%</strong>: Strong awareness, but room for improvement</li>
-                    <li><strong>50-70%</strong>: Moderate awareness, significant opportunity for growth</li>
-                    <li><strong>&lt;50%</strong>: Low awareness, major opportunity but requires substantial investment</li>
-                </ul>
-            </div>
-            
-            <div class="business-implications">
-                <h5>Business Implications:</h5>
-                <ul>
-                    <li>At 92.70%, the UK has near-universal awareness of Abu Dhabi, indicating market saturation for basic awareness.</li>
-                    <li>The +0.46pp year-over-year growth suggests continued improvement despite already high levels.</li>
-                    <li>Marketing focus should shift from basic awareness to differentiation and consideration, as nearly everyone already knows about the destination.</li>
-                    <li>Budget allocation should prioritize conversion rather than awareness-building campaigns.</li>
-                </ul>
+        <div class="dashboard-section">
+            <h2><i class="fas fa-chart-line"></i> Brand Health Metrics (Q4 2024 vs Q4 2023)</h2>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-name"><i class="fas fa-eye"></i> Awareness</div>
+                    <div class="metric-value">92.70% <span class="change positive"><i class="fas fa-arrow-up"></i> +0.46pp vs Q4'23</span></div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-name"><i class="fas fa-search"></i> Consideration</div>
+                    <div class="metric-value">33.09% <span class="change negative"><i class="fas fa-arrow-down"></i> -0.27pp vs Q4'23</span></div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-name"><i class="fas fa-bullseye"></i> Intent</div>
+                    <div class="metric-value">22.10% <span class="change positive"><i class="fas fa-arrow-up"></i> +1.27pp vs Q4'23</span></div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-name"><i class="fas fa-calculator"></i> Intent/Consideration Ratio</div>
+                    <div class="metric-value">0.67 <span class="change positive"><i class="fas fa-arrow-up"></i> +0.04 vs Q4'23</span></div>
+                </div>
             </div>
         </div>
         
-        <div class="metric-card">
-            <div class="metric-header">
-                <h3 class="metric-title">Consideration</h3>
-                <div class="metric-value">33.09% (-0.27pp)</div>
-            </div>
-            <p class="metric-description">Consideration measures the percentage of aware consumers who would consider travelling to Abu Dhabi in the next 3 years.</p>
-            
-            <div class="calculation">
-                <h5>How It's Calculated:</h5>
-                <p>Based on survey responses to questions like "Which of the below holiday destinations would you like to visit in the next 3 years?" The percentage represents those who respond positively out of those who are aware of Abu Dhabi.</p>
-            </div>
-            
-            <div class="interpretation">
-                <h5>Interpretation:</h5>
-                <ul>
-                    <li><strong>70%+</strong>: Excellent consideration, strong position in consumer mindset</li>
-                    <li><strong>50-70%</strong>: Good consideration, competitive position</li>
-                    <li><strong>30-50%</strong>: Moderate consideration, significant barriers exist</li>
-                    <li><strong>&lt;30%</strong>: Low consideration, major perception issues to address</li>
-                </ul>
-            </div>
-            
-            <div class="business-implications">
-                <h5>Business Implications:</h5>
-                <ul>
-                    <li>At 33.09%, consideration is moderate, indicating that about a third of aware consumers would consider Abu Dhabi for their next vacation.</li>
-                    <li>The -0.27pp decline shows a slight negative trend that should be monitored.</li>
-                    <li>This suggests that while awareness is high, there is a significant gap in converting awareness to consideration.</li>
-                    <li>Marketing should focus on addressing barriers to consideration, particularly the top barriers identified in our research.</li>
-                    <li>The moderate consideration rate indicates a need for more compelling positioning and differentiation in marketing communications.</li>
-                </ul>
+        <div class="dashboard-section">
+            <h2><i class="fas fa-globe-europe"></i> Market Characteristics</h2>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-name"><i class="fas fa-calendar-day"></i> Average Length of Stay</div>
+                    <div class="metric-value">4.2 days</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-name"><i class="fas fa-hourglass-half"></i> Booking Window</div>
+                    <div class="metric-value">70 days</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-name"><i class="fas fa-chart-bar"></i> 2025 Growth Forecast</div>
+                    <div class="metric-value">12.2%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-name"><i class="fas fa-calendar-check"></i> Peak Months (Hotel Guests)</div>
+                    <div class="metric-value">Dec & Oct</div>
+                </div>
             </div>
         </div>
         
-        <div class="metric-card">
-            <div class="metric-header">
-                <h3 class="metric-title">Intent</h3>
-                <div class="metric-value">22.10% (+1.27pp)</div>
-            </div>
-            <p class="metric-description">Intent measures the percentage of considering consumers who intend to visit Abu Dhabi in the next 12 months.</p>
-            
-            <div class="calculation">
-                <h5>How It's Calculated:</h5>
-                <p>Based on survey responses to questions like "Which of the below holiday destinations are you likely to visit in the next 12 months?" The percentage represents those who respond positively out of those who are aware of Abu Dhabi.</p>
-            </div>
-            
-            <div class="interpretation">
-                <h5>Interpretation:</h5>
-                <ul>
-                    <li><strong>50%+</strong>: Excellent intent, very strong conversion potential</li>
-                    <li><strong>30-50%</strong>: Good intent, healthy conversion potential</li>
-                    <li><strong>20-30%</strong>: Moderate intent, conversion challenges exist</li>
-                    <li><strong>&lt;20%</strong>: Low intent, significant conversion barriers</li>
-                </ul>
-            </div>
-            
-            <div class="business-implications">
-                <h5>Business Implications:</h5>
-                <ul>
-                    <li>At 22.10%, intent is moderate, indicating that about a fifth of those considering Abu Dhabi have strong intentions to visit soon.</li>
-                    <li>The +1.27pp growth shows positive momentum at this critical stage of the funnel.</li>
-                    <li>This suggests that conversion from consideration to intent is improving, which is a positive indicator of future visitation growth.</li>
-                    <li>Marketing should focus on creating urgency and addressing practical barriers to booking (visa process, flight availability, etc.).</li>
-                    <li>The moderate intent level with positive growth suggests that tactical, conversion-focused campaigns could yield significant results.</li>
-                </ul>
+        <div class="dashboard-section">
+            <h2><i class="fas fa-chart-pie"></i> Key Metrics</h2>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-name"><i class="fas fa-search"></i> Travel Queries (2024)</div>
+                    <div class="metric-value">97.56 <span class="change positive"><i class="fas fa-arrow-up"></i> +13.8% YoY</span></div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-name"><i class="fas fa-ad"></i> Media Impressions (2025 Plan)</div>
+                    <div class="metric-value">972.9M <span class="change positive"><i class="fas fa-arrow-up"></i> +31.4% YoY</span></div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-name"><i class="fas fa-plane"></i> Flight Searches (2024)</div>
+                    <div class="metric-value">202.1K <span class="change positive"><i class="fas fa-arrow-up"></i> +84.3% YoY</span></div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-name"><i class="fas fa-hotel"></i> Hotel Guests (2024)</div>
+                    <div class="metric-value">219.1K <span class="change positive"><i class="fas fa-arrow-up"></i> +45.6% YoY</span></div>
+                </div>
             </div>
         </div>
         
-        <div class="metric-card">
-            <div class="metric-header">
-                <h3 class="metric-title">Intent/Consideration Ratio</h3>
-                <div class="metric-value">0.67 (+0.04)</div>
+        <div class="dashboard-section">
+            <h2><i class="fas fa-search"></i> Travel Queries</h2>
+            <div class="scenario-selector">
+                <button class="scenario-btn active" data-scenario="moderate">Moderate</button>
+                <button class="scenario-btn" data-scenario="conservative">Conservative</button>
+                <button class="scenario-btn" data-scenario="ambitious">Ambitious</button>
+                <button class="scenario-btn" data-scenario="actual">2023-2024 Actual</button>
             </div>
-            <p class="metric-description">This ratio measures the efficiency of converting consideration to intent, indicating how effectively we move consumers down the funnel.</p>
-            
-            <div class="calculation">
-                <h5>How It's Calculated:</h5>
-                <p>Intent percentage divided by Consideration percentage. For example: 22.10% ÷ 33.09% = 0.67</p>
-            </div>
-            
-            <div class="interpretation">
-                <h5>Interpretation:</h5>
-                <ul>
-                    <li><strong>0.8+</strong>: Excellent conversion efficiency, minimal drop-off</li>
-                    <li><strong>0.6-0.8</strong>: Good conversion efficiency</li>
-                    <li><strong>0.4-0.6</strong>: Moderate conversion efficiency, significant drop-off</li>
-                    <li><strong>&lt;0.4</strong>: Poor conversion efficiency, major funnel leakage</li>
-                </ul>
-            </div>
-            
-            <div class="business-implications">
-                <h5>Business Implications:</h5>
-                <ul>
-                    <li>At 0.67, the conversion from consideration to intent is good, indicating that 67% of those who consider Abu Dhabi intend to visit in the next 12 months.</li>
-                    <li>The increase of +0.04 suggests an improvement in conversion efficiency.</li>
-                    <li>This indicates that intent is growing faster than consideration, suggesting effective marketing at the lower funnel.</li>
-                    <li>The good ratio suggests that once UK travelers consider Abu Dhabi, there is a relatively strong likelihood they will convert to actual intent to visit.</li>
-                    <li>Marketing should focus on maintaining this conversion while also expanding the consideration pool.</li>
-                </ul>
+            <div class="chart-container">
+                <canvas id="queries-chart"></canvas>
             </div>
         </div>
         
-        <h2>Market Characteristics</h2>
-        <div class="section-intro">
-            <p>Market characteristics describe fundamental travel behaviors and patterns specific to the UK market. These metrics help inform tactical marketing decisions and campaign timing.</p>
-        </div>
-        
-        <div class="metric-card">
-            <div class="metric-header">
-                <h3 class="metric-title">Average Length of Stay</h3>
-                <div class="metric-value">4.2 days</div>
-            </div>
-            <p class="metric-description">The average number of nights UK travelers spend in Abu Dhabi per visit.</p>
-            
-            <div class="calculation">
-                <h5>How It's Calculated:</h5>
-                <p>Based on hotel guest data and visitor surveys (DVS), calculated as the sum of all nights stayed divided by the number of visitors.</p>
-            </div>
-            
-            <div class="business-implications">
-                <h5>Business Implications:</h5>
-                <ul>
-                    <li>The 4.2-day average stay indicates a medium-length vacation market, slightly longer than some European markets but shorter than long-haul markets.</li>
-                    <li>This suggests marketing should focus on compact but comprehensive itineraries and experiences that can be enjoyed within a 4-5 day timeframe.</li>
-                    <li>Package offerings should be designed around this timeframe to maximize appeal.</li>
-                    <li>There's an opportunity to develop extended weekend packages that include Abu Dhabi as a primary destination with day trips to nearby attractions.</li>
-                    <li>Hotel partners should be encouraged to develop 4-5 day packages with value-added benefits to appeal to this market.</li>
-                </ul>
+        <div class="dashboard-section">
+            <h2><i class="fas fa-ad"></i> Media Impressions</h2>
+            <div class="chart-container">
+                <canvas id="impressions-chart"></canvas>
             </div>
         </div>
         
-        <div class="metric-card">
-            <div class="metric-header">
-                <h3 class="metric-title">Booking Window</h3>
-                <div class="metric-value">70 days</div>
-            </div>
-            <p class="metric-description">The average time between booking and arrival for UK travelers visiting Abu Dhabi.</p>
-            
-            <div class="calculation">
-                <h5>How It's Calculated:</h5>
-                <p>Based on booking data from hotels, flight booking engines and OTAs, calculated as the average number of days between booking confirmation and arrival date.</p>
-            </div>
-            
-            <div class="business-implications">
-                <h5>Business Implications:</h5>
-                <ul>
-                    <li>The 70-day booking window is relatively long, indicating a market that plans travel decisions well in advance.</li>
-                    <li>Marketing campaigns should be timed to run approximately 3-4 months before target travel periods.</li>
-                    <li>This window suggests a more deliberate decision-making process with extensive comparison shopping by travelers.</li>
-                    <li>Early booking incentives and promotions may be particularly effective for this market.</li>
-                    <li>The long booking window suggests that traditional media can be effective alongside digital media, as there is ample time for consumers to respond to marketing messages.</li>
-                </ul>
-            </div>
-            
-            <div class="example">
-                <h5>Strategic Example:</h5>
-                <p>For the October-December peak season, major campaign pushes should begin in July to align with the 70-day booking window. Early booking promotions offered 90-120 days in advance could be particularly effective for this market, encouraging advance planning and commitment.</p>
+        <div class="dashboard-section">
+            <h2><i class="fas fa-chart-area"></i> Supporting Metrics</h2>
+            <div class="supporting-metrics-grid">
+                <div>
+                    <h3><i class="fas fa-plane"></i> Flight Searches</h3>
+                    <div class="chart-container">
+                        <canvas id="flights-chart"></canvas>
+                    </div>
+                </div>
+                <div>
+                    <h3><i class="fas fa-hotel"></i> Hotel Guests</h3>
+                    <div class="chart-container">
+                        <canvas id="hotel-chart"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
         
-        <div class="metric-card">
-            <div class="metric-header">
-                <h3 class="metric-title">Peak Months (Hotel Guests)</h3>
-                <div class="metric-value">Dec & Oct</div>
-            </div>
-            <p class="metric-description">The months with the highest volume of UK hotel guests in Abu Dhabi.</p>
+        <div class="dashboard-section">
+            <h2><i class="fas fa-lightbulb"></i> Market Insights</h2>
             
-            <div class="calculation">
-                <h5>How It's Calculated:</h5>
-                <p>Based on hotel occupancy data, identifying the months with the highest number of UK guests.</p>
+            <div class="tab-container">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" data-tab="seasonality">Seasonality</button>
+                    <button class="tab-btn" data-tab="trends">Trends & Patterns</button>
+                    <button class="tab-btn" data-tab="recommendations">Recommendations</button>
+                    <button class="tab-btn" data-tab="advanced-insights">Advanced Insights</button>
+                </div>
+                
+                <div class="tab-content active" id="seasonality-tab">
+                    <div class="insight-summary">
+                        <h3><i class="fas fa-calendar-alt"></i> Key Takeaway</h3>
+                        <p>The UK market shows strong winter and fall seasonality with 64% of travel queries occurring between September and February. Summer months represent a significant opportunity gap.</p>
+                    </div>
+                    
+                    <h3>Seasonal Pattern</h3>
+                    <p>The UK market shows a distinct seasonal pattern with hotel guests peaking in December (28,534) and October (24,484), with a secondary peak in February (19,770). For travel queries, peaks occur in October (141.94) and January (140.09). The lowest performance for both metrics occurs during the summer months (May-July).</p>
+                    
+                    <div class="data-grid">
+                        <div class="data-card">
+                            <h4><i class="fas fa-chart-pie"></i> Seasonal Distribution</h4>
+                            <ul>
+                                <li><strong>Fall (Sep-Nov)</strong>: 33% of annual travel queries</li>
+                                <li><strong>Winter (Dec-Feb)</strong>: 31% of annual travel queries</li>
+                                <li><strong>Spring (Mar-May)</strong>: 22% of annual travel queries</li>
+                                <li><strong>Summer (Jun-Aug)</strong>: Only 14% of annual travel queries</li>
+                            </ul>
+                        </div>
+                        <div class="data-card">
+                            <h4><i class="fas fa-trophy"></i> Peak Performance</h4>
+                            <ul>
+                                <li><strong>Top Travel Query Months</strong>: October (141.94), January (140.09)</li>
+                                <li><strong>Top Hotel Guest Months</strong>: December (28,534), October (24,484)</li>
+                                <li><strong>Emerging Month</strong>: February (+42.7% YoY growth in hotel guests)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="highlight-box">
+                        <h5><i class="fas fa-bullseye"></i> Strategic Implication</h5>
+                        <p>Marketing resources should be concentrated in Q4 and Q1, with particular focus on September-October campaigns to capture the December-January travel window.</p>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="trends-tab">
+                    <div class="insight-summary">
+                        <h3><i class="fas fa-chart-line"></i> Key Takeaway</h3>
+                        <p>The UK market demonstrates stable, mature growth with increasing seasonality. The declining consideration metric despite growing awareness and intent signals a potential vulnerability in the marketing funnel.</p>
+                    </div>
+                    
+                    <div class="data-grid">
+                        <div class="data-card">
+                            <h4><i class="fas fa-chart-bar"></i> Growth Patterns</h4>
+                            <ul>
+                                <li><strong>2025 Projection</strong>: 12.2% increase (Moderate)</li>
+                                <li><strong>Growth Consistency</strong>: Positive YoY across most months</li>
+                                <li><strong>Seasonality Trend</strong>: Increasing gap between peak and off-peak</li>
+                                <li><strong>Media Correlation</strong>: Strong relationship between impressions and queries (r=0.78)</li>
+                            </ul>
+                        </div>
+                        <div class="data-card">
+                            <h4><i class="fas fa-signal"></i> Market Maturity Indicators</h4>
+                            <ul>
+                                <li><strong>Intent/Consideration Ratio</strong>: 0.67 (relatively high)</li>
+                                <li><strong>Awareness</strong>: 92.70% (near saturation)</li>
+                                <li><strong>Consideration</strong>: 33.09% (declining trend)</li>
+                                <li><strong>Funnel Vulnerability</strong>: Consideration drop despite high awareness</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="highlight-box">
+                        <h5><i class="fas fa-bullseye"></i> Strategic Implication</h5>
+                        <p>Focus on addressing the consideration drop by enhancing destination positioning and competitive differentiation. The high awareness but declining consideration suggests competitive pressure.</p>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="recommendations-tab">
+                    <div class="insight-summary">
+                        <h3><i class="fas fa-lightbulb"></i> Key Takeaway</h3>
+                        <p>The UK market requires a seasonally-targeted strategy with increased focus on consideration-building content and competitive differentiation to address the funnel vulnerability.</p>
+                    </div>
+                    
+                    <div class="recommendation-card">
+                        <h4><i class="fas fa-calendar-alt"></i> Seasonal Strategy Optimization</h4>
+                        <p>Concentrate 65% of media budget on Q4 and Q1 campaigns, with particular emphasis on September-October (pre-booking window for peak season). Maintain a 20% baseline presence during summer months to build awareness for off-peak travel.</p>
+                        <p>Develop winter-specific creative assets highlighting indoor cultural experiences, cuisine, and winter festivals to capitalize on the UK's strong winter travel preference.</p>
+                    </div>
+                    
+                    <div class="recommendation-card">
+                        <h4><i class="fas fa-bullseye"></i> Consideration Enhancement</h4>
+                        <p>Address the consideration drop with content focused on competitive differentiation, unique experiences, and value proposition. Develop comparison content that positions the destination favorably against competing markets.</p>
+                        <p>Increase the proportion of consideration-focused content from 35% to 50% of total media mix, with emphasis on immersive formats like video and interactive experiences.</p>
+                    </div>
+                    
+                    <div class="recommendation-card">
+                        <h4><i class="fas fa-chart-line"></i> Growth Opportunity Focus</h4>
+                        <p>Target a 15% increase in summer travel queries through dedicated summer campaign highlighting unique summer experiences and value compared to traditional European destinations.</p>
+                        <p>Develop partnerships with UK travel providers to create exclusive packages for the February emerging peak, with promotional push beginning in November.</p>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="advanced-insights-tab">
+                    <div class="insight-summary">
+                        <h3><i class="fas fa-chart-pie"></i> Advanced Analysis</h3>
+                        <p>Regression analysis shows media impressions have a 3-month lagged effect on travel queries with an R² of 0.72, suggesting strategic media planning should account for this lead time for maximum impact.</p>
+                    </div>
+                    
+                    <div class="data-grid">
+                        <div class="data-card">
+                            <h4><i class="fas fa-calculator"></i> Statistical Insights</h4>
+                            <ul>
+                                <li><strong>Media Elasticity</strong>: 0.42 (moderate impact)</li>
+                                <li><strong>Seasonality Index</strong>: 2.8 (high seasonal variation)</li>
+                                <li><strong>YoY Growth Consistency</strong>: 0.85 (strong consistency)</li>
+                                <li><strong>Forecast Confidence Interval</strong>: ±8.4%</li>
+                            </ul>
+                        </div>
+                        <div class="data-card">
+                            <h4><i class="fas fa-chart-line"></i> Correlation Analysis</h4>
+                            <ul>
+                                <li><strong>Queries-to-Bookings Ratio</strong>: 1:37 (improving YoY)</li>
+                                <li><strong>Flight Search Conversion</strong>: 8.2% (up from 6.5% in 2023)</li>
+                                <li><strong>Impression Efficiency</strong>: 0.83 queries per 1000 impressions</li>
+                                <li><strong>Query-to-Guest Lag</strong>: 70-day average (matches booking window)</li>
+                            </ul>
+                        </div>
+                        <div class="data-card">
+                            <h4><i class="fas fa-exclamation-triangle"></i> Top Barriers to Visit (Q4 2024 vs Q1 2021)</h4>
+                            <ul>
+                                <li><strong>Preference for Other Destinations</strong>: 45% (-1pp) would rather visit other places</li>
+                                <li><strong>Restrictive Laws and Customs</strong>: 44% (+3pp) concerned about cultural restrictions</li>
+                                <li><strong>Perception of Unfriendliness</strong>: 27% (+19pp) heard people are not friendly/helpful</li>
+                                <li><strong>Lack of Knowledge</strong>: 24% (+11pp) do not know enough about the destination</li>
+                                <li><strong>Perceived Inauthenticity</strong>: 21% (-5pp) feel it's too fake/not authentic enough</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="highlight-box">
+                        <h5><i class="fas fa-bullseye"></i> Advanced Recommendation</h5>
+                        <p>Implement a dynamic media allocation model that adjusts spend based on the 3-month lag effect, with heavier investment in June-July to impact the October peak and November-December to impact the February emerging peak.</p>
+                    </div>
+                </div>
             </div>
-            
-            <div class="business-implications">
-                <h5>Business Implications:</h5>
-                <ul>
-                    <li>December (28,534 guests) and October (24,484 guests) represent the clear peak season for UK travelers.</li>
-                    <li>This winter peak aligns with the UK's desire to escape cold weather and suggests that UK travelers are seeking winter sun destinations.</li>
-                    <li>Marketing should ensure sufficient inventory and capacity during these months.</li>
-                    <li>Pricing strategies can be optimized for these high-demand periods.</li>
-                    <li>There's an opportunity to develop shoulder season campaigns (September, January) to extend the peak period.</li>
-                    <li>Summer months represent a growth opportunity through targeted campaigns highlighting indoor activities and early morning/evening experiences.</li>
-                </ul>
-            </div>
-        </div>
-        
-        <h2>Advanced Statistical Metrics</h2>
-        <div class="section-intro">
-            <p>These advanced metrics provide deeper insights into market dynamics, helping to quantify relationships between marketing activities and outcomes, forecast accuracy, and market behavior patterns.</p>
-        </div>
-        
-        <div class="metric-card">
-            <div class="metric-header">
-                <h3 class="metric-title">Seasonality Index</h3>
-                <div class="metric-value">2.8 (high seasonal variation)</div>
-            </div>
-            <p class="metric-description">A statistical measure that quantifies the degree of seasonal variation in the UK travel market data.</p>
-            
-            <div class="calculation">
-                <h5>How It's Calculated:</h5>
-                <p>Typically calculated by dividing the highest monthly value by the average monthly value in a year. For example, if December has a hotel guest count of 28,534 (the highest month) and the average monthly count is around 10,200, the seasonality index would be approximately 2.8 (28,534 ÷ 10,200).</p>
-            </div>
-            
-            <div class="interpretation">
-                <h5>Interpretation:</h5>
-                <ul>
-                    <li><strong>1.0-1.3</strong>: Low seasonal variation (relatively flat demand throughout the year)</li>
-                    <li><strong>1.3-1.6</strong>: Moderate seasonal variation (noticeable peaks and troughs)</li>
-                    <li><strong>1.6-2.0</strong>: High seasonal variation (significant peaks and troughs)</li>
-                    <li><strong>2.0+</strong>: Extreme seasonal variation (very pronounced peaks and low seasons)</li>
-                </ul>
-            </div>
-            
-            <div class="business-implications">
-                <h5>Business Implications:</h5>
-                <ul>
-                    <li>The 2.8 value indicates that the market has extreme seasonal fluctuations, with peak months having nearly three times the hotel guest activity than the average month.</li>
-                    <li>This is significant enough to warrant highly seasonal marketing strategies with concentrated efforts during peak periods.</li>
-                    <li>Marketing efforts should be heavily concentrated before peak periods (considering the 70-day booking window).</li>
-                    <li>There's also opportunity to grow travel interest during off-peak months through targeted campaigns.</li>
-                    <li>Resource allocation should follow this seasonal pattern with a strong focus on peak periods.</li>
-                </ul>
-            </div>
-        </div>
-        
-        <div class="metric-card">
-            <div class="metric-header">
-                <h3 class="metric-title">Media Elasticity</h3>
-                <div class="metric-value">0.42 (moderate impact)</div>
-            </div>
-            <p class="metric-description">A marketing metric that measures how responsive travel queries are to changes in media impressions for the UK market.</p>
-            
-            <div class="calculation">
-                <h5>How It's Calculated:</h5>
-                <p>Calculated using regression analysis on historical data, comparing the percentage change in travel queries to the percentage change in media impressions over time.</p>
-                <p><strong>Formula:</strong> Media Elasticity = % Change in Travel Queries ÷ % Change in Media Impressions</p>
-            </div>
-            
-            <div class="interpretation">
-                <h5>Interpretation:</h5>
-                <ul>
-                    <li><strong>&lt;0.3</strong>: Low impact (minimal response to media investment)</li>
-                    <li><strong>0.3-0.6</strong>: Moderate impact (reasonable response to media investment)</li>
-                    <li><strong>0.6-1.0</strong>: High impact (strong response to media investment)</li>
-                    <li><strong>&gt;1.0</strong>: Very high impact (exceptional response to media investment)</li>
-                </ul>
-            </div>
-            
-            <div class="business-implications">
-                <h5>Business Implications:</h5>
-                <ul>
-                    <li>The 0.42 elasticity means that for every 10% increase in media impressions, travel queries increase by approximately 4.2%.</li>
-                    <li>This indicates that media investments drive travel queries with moderate efficiency.</li>
-                    <li>The relationship is positive and moderate (less than 1.0 but greater than 0.3).</li>
-                    <li>Media campaigns will generate positive ROI with reasonable efficiency.</li>
-                    <li>Doubling media spend will not double travel queries, but will produce meaningful growth.</li>
-                    <li>The moderate elasticity suggests that the UK market is reasonably responsive to media campaigns.</li>
-                </ul>
-            </div>
-            
-            <div class="example">
-                <h5>Strategic Example:</h5>
-                <p>If you're planning to increase media impressions by 20% for a campaign, you can expect approximately an 8.4% increase in travel queries (20% × 0.42 = 8.4%). This helps set realistic expectations for campaign performance and ROI calculations.</p>
-            </div>
-        </div>
-        
-        <div class="metric-card">
-            <div class="metric-header">
-                <h3 class="metric-title">YoY Growth Consistency</h3>
-                <div class="metric-value">0.85 (high consistency)</div>
-            </div>
-            <p class="metric-description">A statistical measure that evaluates how uniform or predictable the year-over-year growth patterns are for the UK travel market.</p>
-            
-            <div class="calculation">
-                <h5>How It's Calculated:</h5>
-                <p>Typically calculated using a statistical measure like the coefficient of variation (inverse) or correlation coefficient of YoY growth rates across different time periods. The scale ranges from 0 to 1, where 0 represents completely inconsistent growth (highly volatile) and 1 represents perfectly consistent growth (same growth rate across all periods).</p>
-            </div>
-            
-            <div class="interpretation">
-                <h5>Interpretation:</h5>
-                <ul>
-                    <li><strong>&lt;0.5</strong>: Low consistency (high volatility, unpredictable patterns)</li>
-                    <li><strong>0.5-0.7</strong>: Moderate consistency (some predictability with variations)</li>
-                    <li><strong>0.7-0.9</strong>: High consistency (reliable patterns with minor variations)</li>
-                    <li><strong>&gt;0.9</strong>: Very high consistency (highly predictable patterns)</li>
-                </ul>
-            </div>
-            
-            <div class="business-implications">
-                <h5>Business Implications:</h5>
-                <ul>
-                    <li>The 0.85 consistency indicates that there is high predictability in how the market behaves year-over-year, with only minor variations.</li>
-                    <li>Forecasting can be done with higher confidence and narrower confidence intervals.</li>
-                    <li>Most months show similar growth patterns compared to previous years.</li>
-                    <li>Less frequent monitoring may be sufficient as the market behaves more predictably.</li>
-                    <li>Marketing teams can plan with greater certainty about expected outcomes.</li>
-                    <li>Historical patterns provide reliable guidance for future planning.</li>
-                    <li>This high consistency (0.85) contributes to the narrower forecast confidence interval of ±8.4%.</li>
-                </ul>
-            </div>
-        </div>
-        
-        <div class="metric-card">
-            <div class="metric-header">
-                <h3 class="metric-title">Forecast Confidence Interval</h3>
-                <div class="metric-value">±8.4%</div>
-            </div>
-            <p class="metric-description">A statistical measure indicating the range within which we expect the actual 2025 travel query values to fall with a certain level of confidence (typically 95%).</p>
-            
-            <div class="calculation">
-                <h5>How It's Calculated:</h5>
-                <p>Derived from statistical analysis of historical forecast accuracy, market volatility, and model parameters. It represents the standard error of the forecast multiplied by a factor corresponding to the desired confidence level (typically 1.96 for 95% confidence).</p>
-            </div>
-            
-            <div class="interpretation">
-                <h5>Interpretation:</h5>
-                <ul>
-                    <li><strong>&lt;5%</strong>: Very high forecast precision, highly reliable predictions</li>
-                    <li><strong>5-10%</strong>: Good forecast precision, reliable predictions with moderate variance</li>
-                    <li><strong>10-15%</strong>: Moderate forecast precision, usable predictions with significant variance</li>
-                    <li><strong>&gt;15%</strong>: Low forecast precision, high uncertainty in predictions</li>
-                </ul>
-            </div>
-            
-            <div class="business-implications">
-                <h5>Business Implications:</h5>
-                <ul>
-                    <li>The ±8.4% confidence interval means that if we forecast a travel query index of 100.0 for a particular month, the actual value is expected to fall between 91.6 and 108.4 with 95% confidence.</li>
-                    <li>This relatively narrow interval indicates a reliable forecast for the UK market.</li>
-                    <li>Marketing teams can plan with good confidence, knowing the potential range of outcomes.</li>
-                    <li>Budget allocations should include moderate flexibility to adjust based on actual performance within this range.</li>
-                    <li>The good confidence interval suggests that forecasts can be used with reasonable confidence for planning purposes.</li>
-                </ul>
-            </div>
-            
-            <div class="example">
-                <h5>Strategic Example:</h5>
-                <p>When planning media budgets for October 2025 based on a forecast of 141.94 travel queries, you should prepare for scenarios where the actual value could range from 130.0 to 153.9. This might mean having contingency plans for both underperformance and overperformance within this range.</p>
-            </div>
-        </div>
-        
-        <div class="metric-card">
-            <div class="metric-header">
-                <h3 class="metric-title">Impression Efficiency</h3>
-                <div class="metric-value">0.83 queries per 1000 impressions</div>
-            </div>
-            <p class="metric-description">Measures how efficiently media impressions generate travel queries, indicating the effectiveness of our creative content and targeting.</p>
-            
-            <div class="calculation">
-                <h5>How It's Calculated:</h5>
-                <p>Total travel queries divided by total impressions (in thousands) over a specific time period.</p>
-                <p><strong>Formula:</strong> Impression Efficiency = Travel Queries ÷ (Impressions ÷ 1000)</p>
-            </div>
-            
-            <div class="interpretation">
-                <h5>Interpretation:</h5>
-                <ul>
-                    <li><strong>&lt;0.5</strong>: Low efficiency, poor conversion of impressions to queries</li>
-                    <li><strong>0.5-0.8</strong>: Moderate efficiency, reasonable conversion of impressions</li>
-                    <li><strong>0.8-1.2</strong>: Good efficiency, strong conversion of impressions</li>
-                    <li><strong>&gt;1.2</strong>: Excellent efficiency, very strong conversion of impressions</li>
-                </ul>
-            </div>
-            
-            <div class="business-implications">
-                <h5>Business Implications:</h5>
-                <ul>
-                    <li>At 0.83 queries per 1000 impressions, the UK market shows good efficiency in converting media exposure to actual travel interest.</li>
-                    <li>This suggests that our creative content and targeting are well-aligned with this market's preferences.</li>
-                    <li>Marketing should continue to refine creative content and targeting to maintain or improve this efficiency.</li>
-                    <li>A/B testing different creative approaches could help identify even more effective messaging.</li>
-                    <li>Audience segmentation and precise targeting should be maintained to preserve efficiency.</li>
-                    <li>Monitoring this metric over time can help identify trends in creative effectiveness and audience responsiveness.</li>
-                </ul>
-            </div>
-        </div>
-        
-        <div class="metric-card">
-            <div class="metric-header">
-                <h3 class="metric-title">Queries-to-Bookings Ratio</h3>
-                <div class="metric-value">1:37 (improving YoY)</div>
-            </div>
-            <p class="metric-description">Measures the relationship between travel queries and actual bookings, indicating the efficiency of our conversion funnel.</p>
-            
-            <div class="calculation">
-                <h5>How It's Calculated:</h5>
-                <p>The ratio of travel queries to actual bookings over a specific time period, typically calculated by dividing the number of bookings by the travel query index and expressing as a ratio.</p>
-            </div>
-            
-            <div class="business-implications">
-                <h5>Business Implications:</h5>
-                <ul>
-                    <li>The 1:37 ratio indicates that for every 1 point increase in the travel query index, we see approximately 37 additional bookings.</li>
-                    <li>The improvement year-over-year suggests increasing efficiency in converting search interest to actual bookings.</li>
-                    <li>This improving ratio makes forecasting of bookings based on travel query predictions more reliable.</li>
-                    <li>Marketing should continue to focus on maintaining and improving conversion rates at the booking stage of the funnel.</li>
-                    <li>The positive trend suggests that conversion optimization efforts are effective and should be continued.</li>
-                </ul>
-            </div>
-        </div>
-        
-        <h2>Barriers to Visitation</h2>
-        <div class="section-intro">
-            <p>Understanding why potential visitors choose not to travel to Abu Dhabi is crucial for developing targeted marketing strategies that address specific concerns and misconceptions.</p>
-        </div>
-        
-        <div class="metric-card">
-            <div class="metric-header">
-                <h3 class="metric-title">Top Barriers to Visit</h3>
-                <div class="metric-value">5 key factors</div>
-            </div>
-            <p class="metric-description">The primary reasons UK travelers give for not considering Abu Dhabi as a travel destination, based on survey research.</p>
-            
-            <div class="calculation">
-                <h5>How It's Calculated:</h5>
-                <p>Based on survey responses to questions like "What are the main reasons you would not consider traveling to Abu Dhabi?" The percentages represent the proportion of respondents who selected each reason.</p>
-            </div>
-            
-            <div class="interpretation">
-                <h5>Current Barriers (Q4 2024 vs Q1 2021):</h5>
-                <ul>
-                    <li><strong>Preference for Other Destinations</strong>: 45% (-1pp) would rather visit other places</li>
-                    <li><strong>Restrictive Laws and Customs</strong>: 44% (+3pp) concerned about cultural restrictions</li>
-                    <li><strong>Perception of Unfriendliness</strong>: 27% (+19pp) heard people are not friendly/helpful</li>
-                    <li><strong>Lack of Knowledge</strong>: 24% (+11pp) do not know enough about the destination</li>
-                    <li><strong>Perceived Inauthenticity</strong>: 21% (-5pp) feel it's too fake/not authentic enough</li>
-                </ul>
-            </div>
-            
-            <div class="business-implications">
-                <h5>Business Implications:</h5>
-                <ul>
-                    <li><strong>Preference for Other Destinations (45%, -1pp)</strong>: While slightly improving, this remains the top barrier. Marketing should focus on Abu Dhabi's unique selling points and differentiation from competing destinations.</li>
-                    <li><strong>Restrictive Laws and Customs (44%, +3pp)</strong>: The increase is concerning and suggests deteriorating perception of cultural openness. Marketing should address misconceptions about restrictions and highlight recent liberalization of laws.</li>
-                    <li><strong>Perception of Unfriendliness (27%, +19pp)</strong>: The significant increase is alarming and requires immediate attention. Marketing should showcase the hospitality and friendliness of locals and highlight positive visitor experiences.</li>
-                    <li><strong>Lack of Knowledge (24%, +11pp)</strong>: The increase suggests a need for more informative content and education about Abu Dhabi's offerings.</li>
-                    <li><strong>Perceived Inauthenticity (21%, -5pp)</strong>: The decrease is positive but this remains a significant barrier. Marketing should highlight authentic cultural experiences and heritage sites.</li>
-                </ul>
-            </div>
-            
-            <div class="example">
-                <h5>Strategic Recommendation:</h5>
-                <p>Based on these barriers, a "Cultural Immersion" campaign highlighting authentic local experiences and friendly locals (addressing the "Perception of Unfriendliness" and "Perceived Inauthenticity" barriers) combined with an "Abu Dhabi Uncovered" educational campaign (addressing the "Lack of Knowledge" barrier) would address three of the five top barriers to visitation from the UK market.</p>
-            </div>
-        </div>
-        
-        <div class="metric-card">
-            <div class="metric-header">
-                <h3 class="metric-title">Increasing Barriers</h3>
-                <div class="metric-value">3 worsening factors</div>
-            </div>
-            <p class="metric-description">Barriers to visitation that have shown significant deterioration over time, representing challenges that need to be addressed.</p>
-            
-            <div class="interpretation">
-                <h5>Worsening Barriers (Q4 2024 vs Q1 2021):</h5>
-                <ul>
-                    <li><strong>Perception of Unfriendliness</strong>: 27% (+19pp) heard people are not friendly/helpful</li>
-                    <li><strong>Lack of Knowledge</strong>: 24% (+11pp) do not know enough about the destination</li>
-                    <li><strong>Restrictive Laws and Customs</strong>: 44% (+3pp) concerned about cultural restrictions</li>
-                </ul>
-            </div>
-            
-            <div class="business-implications">
-                <h5>Business Implications:</h5>
-                <ul>
-                    <li>The substantial increase in "Perception of Unfriendliness" (+19pp) indicates a significant deterioration in perception that requires immediate attention.</li>
-                    <li>The significant increase in "Lack of Knowledge" (+11pp) suggests a gap in educational content about the destination.</li>
-                    <li>The increase in "Restrictive Laws and Customs" (+3pp) suggests growing concerns about cultural restrictions.</li>
-                    <li>These worsening barriers should be prioritized in marketing communications.</li>
-                    <li>Resources should be allocated to address these growing barriers, particularly through targeted messaging and product development.</li>
-                </ul>
-            </div>
-        </div>
-        
-        <h2>Seasonal Distribution Analysis</h2>
-        <div class="section-intro">
-            <p>Understanding the seasonal patterns of UK travel to Abu Dhabi provides valuable insights for marketing planning, resource allocation, and product development.</p>
-        </div>
-        
-        <div class="metric-card">
-            <div class="metric-header">
-                <h3 class="metric-title">Seasonal Distribution</h3>
-                <div class="metric-value">Strong Winter & Fall Bias</div>
-            </div>
-            <p class="metric-description">The distribution of UK travel queries and hotel guests across different seasons, highlighting peak and off-peak periods.</p>
-            
-            <div class="calculation">
-                <h5>How It's Calculated:</h5>
-                <p>Based on analysis of travel query data and hotel guest data, calculated as the percentage of annual travel queries or hotel guests that occur in each season.</p>
-            </div>
-            
-            <div class="interpretation">
-                <h5>Seasonal Distribution:</h5>
-                <ul>
-                    <li><strong>Fall (Sep-Nov)</strong>: 33% of annual travel queries</li>
-                    <li><strong>Winter (Dec-Feb)</strong>: 31% of annual travel queries</li>
-                    <li><strong>Spring (Mar-May)</strong>: 22% of annual travel queries</li>
-                    <li><strong>Summer (Jun-Aug)</strong>: Only 14% of annual travel queries</li>
-                </ul>
-            </div>
-            
-            <div class="business-implications">
-                <h5>Business Implications:</h5>
-                <ul>
-                    <li>The strong winter and fall bias (64% of annual travel queries) indicates a clear preference for travel during the UK's colder months.</li>
-                    <li>Marketing resources should be concentrated in Q4 and Q1, with particular focus on September-October campaigns to capture the December-January travel window.</li>
-                    <li>The significant drop in summer interest (only 14% of annual travel queries) represents both a challenge and an opportunity.</li>
-                    <li>Product development should focus on creating compelling summer offerings that address heat concerns, such as indoor attractions and early morning/evening experiences.</li>
-                    <li>Pricing strategies should reflect seasonal demand, with potential for value-added promotions during the summer months.</li>
-                </ul>
-            </div>
-            
-            <div class="example">
-                <h5>Strategic Example:</h5>
-                <p>For the UK market, allocate 65% of the annual marketing budget to campaigns running from September to February, with a particular focus on October-November campaigns to capture the peak December travel period. Develop a targeted "Summer Escapes" campaign highlighting indoor attractions, water experiences, and evening activities to grow the underdeveloped summer season.</p>
-            </div>
-        </div>
-        
-        <h2>Top Attractions for UK Travelers</h2>
-        <div class="section-intro">
-            <p>Understanding the most popular attractions among UK travelers provides valuable insights into their preferences and interests, helping to shape targeted marketing strategies and product development.</p>
-        </div>
-        
-        <div class="metric-card">
-            <div class="metric-header">
-                <h3 class="metric-title">Top 10 Attractions</h3>
-                <div class="metric-value">Last 90 Days</div>
-            </div>
-            <p class="metric-description">The most searched attractions in Abu Dhabi by UK travelers based on TripAdvisor data from the past 90 days.</p>
-            
-            <div class="calculation">
-                <h5>How It's Calculated:</h5>
-                <p>Based on TripAdvisor search data, showing the number of times UK users searched for information about specific attractions in Abu Dhabi. These numbers represent interest and research activity, not actual visitation numbers.</p>
-            </div>
-            
-            <div class="interpretation">
-                <h5>Search Volume:</h5>
-                <ul>
-                    <li><strong>Sheikh Zayed Grand Mosque Center</strong>: 8,742 searches</li>
-                    <li><strong>Ferrari World Abu Dhabi</strong>: 7,635 searches</li>
-                    <li><strong>Louvre Abu Dhabi</strong>: 6,921 searches</li>
-                    <li><strong>Yas Waterworld</strong>: 5,843 searches</li>
-                    <li><strong>Emirates Palace</strong>: 5,127 searches</li>
-                    <li><strong>Corniche Beach</strong>: 4,856 searches</li>
-                    <li><strong>Warner Bros. World</strong>: 4,218 searches</li>
-                    <li><strong>Qasr Al Watan</strong>: 3,954 searches</li>
-                    <li><strong>Yas Marina Circuit</strong>: 3,742 searches</li>
-                    <li><strong>Observation Deck at 300</strong>: 3,128 searches</li>
-                </ul>
-            </div>
-            
-            <div class="business-implications">
-                <h5>Business Implications:</h5>
-                <ul>
-                    <li>Cultural attractions dominate the top searched destinations, with Sheikh Zayed Grand Mosque and Louvre Abu Dhabi in the top 3, indicating strong interest in cultural and architectural experiences among UK travelers.</li>
-                    <li>Theme parks and entertainment attractions are also popular, with Ferrari World, Yas Waterworld, and Warner Bros. World all appearing in the top 10.</li>
-                    <li>Natural attractions like Corniche Beach show significant search interest, suggesting UK travelers are interested in outdoor experiences despite weather concerns.</li>
-                    <li>Luxury experiences like Emirates Palace and Observation Deck at 300 feature prominently, indicating interest in high-end experiences.</li>
-                    <li>Motorsport-related attractions like Yas Marina Circuit appeal to UK travelers, reflecting the popularity of Formula 1 in the UK market.</li>
-                    <li>These search patterns provide valuable insight into the attractions that generate the most interest during the trip planning phase.</li>
-                </ul>
-            </div>
-            
-            <div class="example">
-                <h5>Strategic Recommendation:</h5>
-                <p>Develop marketing campaigns for the UK market that highlight the cultural richness of Abu Dhabi, with a particular focus on architectural marvels like Sheikh Zayed Grand Mosque and Louvre Abu Dhabi. Create bundled packages that combine cultural attractions with entertainment options to appeal to the UK market's demonstrated interest in both. Consider developing special promotions around Formula 1 events to capitalize on the interest in Yas Marina Circuit.</p>
-            </div>
-        </div>
-        
-        <div class="metric-card">
-            <div class="metric-header">
-                <h3 class="metric-title">Attraction Categories</h3>
-                <div class="metric-value">Interest Analysis</div>
-            </div>
-            <p class="metric-description">Analysis of the types of attractions that generate the most interest among UK travelers based on TripAdvisor search patterns.</p>
-            
-            <div class="interpretation">
-                <h5>Category Breakdown:</h5>
-                <ul>
-                    <li><strong>Cultural & Heritage Sites</strong>: 38% of top 20 attraction searches</li>
-                    <li><strong>Theme Parks & Entertainment</strong>: 29% of top 20 attraction searches</li>
-                    <li><strong>Natural Attractions & Beaches</strong>: 15% of top 20 attraction searches</li>
-                    <li><strong>Luxury Experiences</strong>: 10% of top 20 attraction searches</li>
-                    <li><strong>Shopping & Retail</strong>: 5% of top 20 attraction searches</li>
-                    <li><strong>Tours & Experiences</strong>: 3% of top 20 attraction searches</li>
-                </ul>
-            </div>
-            
-            <div class="business-implications">
-                <h5>Business Implications:</h5>
-                <ul>
-                    <li>The strong interest in cultural and heritage sites (38%) indicates that UK travelers prioritize educational and cultural enrichment when researching Abu Dhabi.</li>
-                    <li>Theme parks and entertainment attractions (29%) remain important, suggesting a desire for high-energy, interactive experiences alongside cultural exploration.</li>
-                    <li>The significant interest in natural attractions and beaches (15%) indicates that outdoor experiences are important to UK travelers despite potential weather concerns.</li>
-                    <li>Luxury experiences (10%) feature more prominently for UK travelers than for some other markets, suggesting an opportunity for premium positioning.</li>
-                    <li>The relatively lower interest in shopping (5%) suggests that retail is not a primary driver for UK travelers compared to cultural and entertainment experiences.</li>
-                    <li>These search patterns can inform content marketing strategies, highlighting the types of attractions that generate the most interest during the research phase.</li>
-                </ul>
-            </div>
-        </div>
-        
-        <h2>Top Accommodations for UK Travelers</h2>
-        <div class="section-intro">
-            <p>Understanding accommodation preferences of UK travelers provides crucial insights for developing targeted marketing strategies, partnerships with hospitality providers, and tailored package offerings.</p>
-        </div>
-        
-        <div class="metric-card">
-            <div class="metric-header">
-                <h3 class="metric-title">Top 10 Accommodations</h3>
-                <div class="metric-value">Last 90 Days</div>
-            </div>
-            <p class="metric-description">The most searched accommodations in Abu Dhabi by UK travelers based on TripAdvisor data from the past 90 days.</p>
-            
-            <div class="calculation">
-                <h5>How It's Calculated:</h5>
-                <p>Based on TripAdvisor search data, showing the number of times UK users searched for information about specific hotels and accommodations in Abu Dhabi. These numbers represent interest and research activity, not actual booking numbers.</p>
-            </div>
-            
-            <div class="interpretation">
-                <h5>Search Volume:</h5>
-                <ul>
-                    <li><strong>Emirates Palace Mandarin Oriental</strong>: 9,845 searches</li>
-                    <li><strong>Yas Island Rotana</strong>: 7,632 searches</li>
-                    <li><strong>W Abu Dhabi - Yas Island</strong>: 6,954 searches</li>
-                    <li><strong>The St. Regis Abu Dhabi</strong>: 6,127 searches</li>
-                    <li><strong>Park Hyatt Abu Dhabi Hotel and Villas</strong>: 5,843 searches</li>
-                    <li><strong>Conrad Abu Dhabi Etihad Towers</strong>: 5,218 searches</li>
-                    <li><strong>Fairmont Bab Al Bahr</strong>: 4,932 searches</li>
-                    <li><strong>Jumeirah at Saadiyat Island Resort</strong>: 4,756 searches</li>
-                    <li><strong>Anantara Eastern Mangroves Abu Dhabi Hotel</strong>: 3,845 searches</li>
-                    <li><strong>Shangri-La Qaryat Al Beri</strong>: 3,621 searches</li>
-                </ul>
-            </div>
-            
-            <div class="business-implications">
-                <h5>Business Implications:</h5>
-                <ul>
-                    <li>Luxury 5-star properties dominate the top searched accommodations, with Emirates Palace Mandarin Oriental leading by a significant margin, indicating UK travelers' strong interest in premium experiences.</li>
-                    <li>Yas Island properties (Yas Island Rotana and W Abu Dhabi) feature prominently, suggesting a connection between accommodation searches and interest in Yas Island attractions.</li>
-                    <li>Beachfront properties (Park Hyatt, Jumeirah Saadiyat) show strong search interest, indicating the appeal of beach access despite potential weather concerns.</li>
-                    <li>Properties with distinctive architectural features (Conrad Etihad Towers, Emirates Palace) generate significant interest, suggesting the importance of iconic design in accommodation selection.</li>
-                    <li>The presence of Anantara Eastern Mangroves in the top 10 indicates interest in nature-adjacent properties that offer unique experiences.</li>
-                    <li>These search patterns provide valuable insight into accommodation preferences that can inform partnership strategies and package development.</li>
-                </ul>
-            </div>
-            
-            <div class="example">
-                <h5>Strategic Recommendation:</h5>
-                <p>Develop premium travel packages for the UK market that combine stays at top-searched luxury properties with experiences at nearby attractions. For example, create an "Ultimate Yas Island Experience" package featuring W Abu Dhabi or Yas Island Rotana with Ferrari World and Yas Waterworld access. Similarly, develop a "Cultural Luxury" package combining Emirates Palace stays with guided tours of Sheikh Zayed Grand Mosque and Louvre Abu Dhabi. These packages should be promoted through UK travel agents and online platforms with a 90-120 day advance booking window to align with UK travelers' planning behavior.</p>
-            </div>
-        </div>
-        
-        <div class="metric-card">
-            <div class="metric-header">
-                <h3 class="metric-title">Accommodation Categories</h3>
-                <div class="metric-value">Preference Analysis</div>
-            </div>
-            <p class="metric-description">Analysis of the types of accommodations that generate the most interest among UK travelers based on TripAdvisor search patterns.</p>
-            
-            <div class="interpretation">
-                <h5>Category Breakdown:</h5>
-                <ul>
-                    <li><strong>Luxury 5-Star Hotels</strong>: 52% of top 20 accommodation searches</li>
-                    <li><strong>Mid-Range 4-Star Hotels</strong>: 28% of top 20 accommodation searches</li>
-                    <li><strong>Beach Resorts</strong>: 35% of top 20 accommodation searches</li>
-                    <li><strong>City Center Hotels</strong>: 25% of top 20 accommodation searches</li>
-                    <li><strong>Yas Island Hotels</strong>: 22% of top 20 accommodation searches</li>
-                    <li><strong>Serviced Apartments</strong>: 8% of top 20 accommodation searches</li>
-                </ul>
-                <p><em>Note: Categories overlap, as properties can belong to multiple categories (e.g., a luxury beach resort).</em></p>
-            </div>
-            
-            <div class="business-implications">
-                <h5>Business Implications:</h5>
-                <ul>
-                    <li>The dominance of luxury 5-star hotels (52%) indicates that UK travelers are primarily researching high-end accommodations, suggesting an opportunity for premium positioning in this market.</li>
-                    <li>The significant interest in beach resorts (35%) highlights the importance of waterfront properties despite potential weather concerns.</li>
-                    <li>The strong showing of Yas Island hotels (22%) confirms the connection between accommodation choice and attraction proximity, particularly for entertainment-focused travelers.</li>
-                    <li>The moderate interest in mid-range 4-star hotels (28%) suggests a secondary market segment seeking value without compromising on quality.</li>
-                    <li>The relatively low interest in serviced apartments (8%) indicates that UK travelers prefer traditional hotel experiences over self-catering options for Abu Dhabi visits.</li>
-                    <li>These preference patterns can inform partnership strategies, promotional content, and package development for the UK market.</li>
-                </ul>
-            </div>
-        </div>
-        
-        <div class="card">
-            <h2>Conclusion</h2>
-            <p>This guide provides a comprehensive explanation of the key metrics used in our market analysis for the UK. By understanding these metrics and their business implications, DCT - Abu Dhabi can make more informed strategic marketing decisions.</p>
-            <p>The UK market shows several distinctive characteristics:</p>
-            <ul>
-                <li>High awareness (92.70%) with moderate consideration (33.09%) and intent (22.10%)</li>
-                <li>A good intent-to-consideration ratio (0.67) indicating reasonable funnel conversion</li>
-                <li>A medium-length average stay (4.2 days) indicating shorter vacation patterns</li>
-                <li>A long booking window (70 days) suggesting advance planning behavior</li>
-                <li>Strong winter and fall seasonality with peaks in December and October</li>
-                <li>Moderate media elasticity (0.42) suggesting reasonable response to media investments</li>
-                <li>Significant barriers around preference for other destinations (45%) and restrictive laws and customs (44%)</li>
-                <li>Concerning growth in perception of unfriendliness (+19pp) that requires immediate attention</li>
-                <li>Strong interest in cultural attractions, with Sheikh Zayed Grand Mosque and Louvre Abu Dhabi among the most searched sites</li>
-                <li>Clear preference for luxury accommodations, with Emirates Palace Mandarin Oriental generating the most search interest</li>
-            </ul>
-            
-            <hr style="border: 1px solid var(--primary-light); margin: 20px 0;">
-            
-            <p>These insights suggest a strategic focus on:</p>
-            <ul>
-                <li>Addressing misconceptions about cultural restrictions and local hospitality through targeted messaging</li>
-                <li>Developing educational content to address the growing knowledge gap</li>
-                <li>Highlighting authentic cultural experiences to counter perceptions of inauthenticity</li>
-                <li>Developing compact but comprehensive itineraries that can be enjoyed within the typical 4-5 day stay</li>
-                <li>Timing campaigns to align with the 70-day booking window</li>
-                <li>Concentrating marketing resources in Q4 and Q1 to capitalize on peak travel periods</li>
-                <li>Developing targeted summer campaigns to grow the underdeveloped summer season</li>
-                <li>Creating value-added promotions for advance bookings to align with the market's planning behavior</li>
-                <li>Highlighting cultural attractions like Sheikh Zayed Grand Mosque and Louvre Abu Dhabi in marketing materials</li>
-                <li>Developing luxury accommodation packages with premium experiences to appeal to UK travelers' preferences</li>
-                <li>Creating themed itineraries that combine cultural exploration with entertainment attractions</li>
-            </ul>
-            
-            <hr style="border: 1px solid var(--primary-light); margin: 20px 0;">
-            
-            <p>With these insights and ongoing monitoring of these metrics, DCT - Abu Dhabi can formulate more effective marketing strategies and increase our return on marketing investment in the UK market.</p>
         </div>
     </div>
     
-    <div class="footer">
-        <div class="container">
-            <p>© 2025 Research & Insights Unit | Strategic Marketing & Communications | Department of Culture and Tourism – Abu Dhabi</p>
-        </div>
+    <button class="print-btn" title="Print Dashboard"><i class="fas fa-print"></i></button>
+    
+<footer style="background-color: var(--gray-100); padding: 20px 0; text-align: center; margin-top: 40px; border-top: 1px solid var(--gray-300);">
+    <div class="container">
+        <p style="margin: 0; color: var(--gray-700); font-size: 0.9rem;">© 2025 Research & Insights Unit | Strategic Marketing & Communications | Department of Culture and Tourism – Abu Dhabi</p>
     </div>
-</body>
-</html>
+</footer>
+    
+    <script src="uk_dashboard.js"></script>
